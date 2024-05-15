@@ -6,13 +6,15 @@ import { getPayloadHMR } from '@payloadcms/next/utilities'
 // including admin panel and route handlers, db, etc
 import config from '@payload-config'
 
+// We'd like to import the config from a "proxy" which would be marked as
+// server only, like this:
+// import config from '../../../server-only'
+
 // See the next.config.mjs in this repo -
 // if we could mark certain dependencies as server-only,
 // then here, we could import the server-only config,
 // and no client-side dependencies would be unnecessarily added to the resulting
 // JS for this page.
-
-// import config from '../../../server-only'
 
 // This is a server component, which renders zero client components
 // but if you look at the generated client JS, it's big
