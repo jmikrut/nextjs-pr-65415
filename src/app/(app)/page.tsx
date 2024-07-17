@@ -4,7 +4,7 @@ import { getPayloadHMR } from '@payloadcms/next/utilities'
 // Note that we are importing the Payload config here
 // which tells Payload about everything it needs to do
 // including admin panel and route handlers, db, etc
-import config from '@payload-config'
+import config from '../../../payload.server'
 
 // We'd like to import the config from a "proxy" which would be marked as
 // server only, like this:

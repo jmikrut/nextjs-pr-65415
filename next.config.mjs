@@ -1,9 +1,9 @@
 import { withPayload } from '@payloadcms/next/withPayload'
-// import path from 'path'
-// import { fileURLToPath } from 'url'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-// const filename = fileURLToPath(import.meta.url)
-// const dirname = path.dirname(filename)
+const filename = fileURLToPath(import.meta.url)
+const dirname = path.dirname(filename)
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -14,6 +14,29 @@ const nextConfig = {
   // experimental: {
   //   serverOnlyDependencies: [path.resolve(dirname, './server-config.ts')],
   // },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.module.rules.unshift({
+        // test: /\.(ts|js)x?$/,
+        // issuerLayer: 'payload-server',
+        test: /fake-config/,
+        use: [
+          {
+            loader: path.resolve(dirname, './loader.mjs'),
+          },
+        ],
+      })
+
+      // config.module.rules.unshift({
+      //   test: /payload.server\.ts$/,
+      //   layer: 'payload-server',
+      // })
+
+      console.log(config.module.rules)
+    }
+
+    return config
+  },
 }
 
 export default withPayload(nextConfig)
