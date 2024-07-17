@@ -1,26 +1,31 @@
+const targetFilename = 'payload.server.ts'
+
 export default function loader(source) {
   const callback = this.async()
 
-  if (source.startsWith("'use client'")) {
-    // Check if any module in the parent chain is a special module
-    let isSpecial = false
-    let current = this._module
-
-    while (current) {
-      if (current.isSpecialModule) {
-        isSpecial = true
-        break
-      }
-      current = current.issuer
+  const checkImports = (mod, visited = new Set()) => {
+    if (visited.has(mod)) {
+      return false
     }
-
-    if (isSpecial) {
-      // here, we need to use the `empty-loader` to return an empty module and short-circuit
-      console.log(`Module ${this.resourcePath} is loaded from a special module.`)
-    } else {
-      // console.log(`Module ${this.resourcePath} is not loaded from a special module.`)
+    visited.add(mod)
+    // Get the issuer module
+    const issuer = this._compilation.moduleGraph.getIssuer(mod)
+    if (!issuer) {
+      return false
     }
+    // Check if the issuer's resource path ends with the target filename
+    if (issuer.resource.endsWith(targetFilename)) {
+      return true
+    }
+    // Recursively check the issuer of the current module
+    return checkImports(issuer, visited)
   }
+
+  // if (source.startsWith("'use client'")) {
+  if (checkImports(this._module)) {
+    console.log(`Module ${this.resourcePath} is indirectly imported by ${targetFilename}`)
+  }
+  // }
 
   callback(null, source)
 }

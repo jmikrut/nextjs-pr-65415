@@ -14,26 +14,15 @@ const nextConfig = {
   // experimental: {
   //   serverOnlyDependencies: [path.resolve(dirname, './server-config.ts')],
   // },
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      config.module.rules.push({
-        test: /\.(ts|js)x?$/,
-        use: [
-          {
-            loader: path.resolve(dirname, './loader.mjs'),
-          },
-        ],
-      })
-
-      config.module.rules.push({
-        test: /payload\.server\.ts$/,
-        use: [
-          {
-            loader: path.resolve(dirname, './loader-entry.mjs'),
-          },
-        ],
-      })
-    }
+  webpack: (config) => {
+    config.module.rules.push({
+      test: /\.(ts|js)x?$/,
+      use: [
+        {
+          loader: path.resolve(dirname, './loader.mjs'),
+        },
+      ],
+    })
 
     return config
   },
