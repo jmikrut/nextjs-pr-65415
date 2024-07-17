@@ -1,11 +1,26 @@
-function loader(source) {
-  // The goal is to disregard any SCSS / CSS imports
-  // and return empty source for any client components found
-  console.log('this', this)
-  // console.log('Issuer Layer', this.issuerLayer)
-  console.log('Processing file with my-custom-loader:', this.resourcePath)
+export default function loader(source) {
+  const callback = this.async()
 
-  return source
+  if (source.startsWith("'use client'")) {
+    // Check if any module in the parent chain is a special module
+    let isSpecial = false
+    let current = this._module
+
+    while (current) {
+      if (current.isSpecialModule) {
+        isSpecial = true
+        break
+      }
+      current = current.issuer
+    }
+
+    if (isSpecial) {
+      // here, we need to use the `empty-loader` to return an empty module and short-circuit
+      console.log(`Module ${this.resourcePath} is loaded from a special module.`)
+    } else {
+      // console.log(`Module ${this.resourcePath} is not loaded from a special module.`)
+    }
+  }
+
+  callback(null, source)
 }
-
-export default loader

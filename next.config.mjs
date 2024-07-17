@@ -16,10 +16,8 @@ const nextConfig = {
   // },
   webpack: (config, { isServer }) => {
     if (isServer) {
-      config.module.rules.unshift({
-        // test: /\.(ts|js)x?$/,
-        // issuerLayer: 'payload-server',
-        test: /fake-config/,
+      config.module.rules.push({
+        test: /\.(ts|js)x?$/,
         use: [
           {
             loader: path.resolve(dirname, './loader.mjs'),
@@ -27,12 +25,14 @@ const nextConfig = {
         ],
       })
 
-      // config.module.rules.unshift({
-      //   test: /payload.server\.ts$/,
-      //   layer: 'payload-server',
-      // })
-
-      console.log(config.module.rules)
+      config.module.rules.push({
+        test: /payload\.server\.ts$/,
+        use: [
+          {
+            loader: path.resolve(dirname, './loader-entry.mjs'),
+          },
+        ],
+      })
     }
 
     return config
