@@ -27,7 +27,9 @@ import config from '../../../payload.server'
 // we need a way to opt OUT of any automatic client inclusions for specific
 // dependencies (https://github.com/vercel/next.js/pull/65415)
 const BloatedClientExample: React.FC = async () => {
-  const payload = await getPayloadHMR({ config })
+  const payload = await getPayloadHMR({ config: config.config })
+
+  console.log('payload.config.admin.components', payload.config.admin.components)
 
   const { docs } = await payload.find({
     collection: 'pages',

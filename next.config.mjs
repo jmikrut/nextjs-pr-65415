@@ -15,9 +15,11 @@ const nextConfig = {
   //   serverOnlyDependencies: [path.resolve(dirname, './server-config.ts')],
   // },
   webpack: (config, { isServer }) => {
-    if (isServer) {
+    if (true) {
+      console.log('Building')
       config.module.rules.push({
         test: /\.(ts|js)x?$/,
+        enforce: 'pre',
         use: [
           {
             loader: path.resolve(dirname, './loader.mjs'),
@@ -27,6 +29,7 @@ const nextConfig = {
 
       config.module.rules.push({
         test: /payload\.server\.ts$/,
+        enforce: 'pre',
         use: [
           {
             loader: path.resolve(dirname, './loader-entry.mjs'),
@@ -34,6 +37,8 @@ const nextConfig = {
         ],
       })
     }
+
+    //console.log('config.module.rules', config.module.rules)
 
     return config
   },

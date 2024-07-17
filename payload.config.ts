@@ -4,6 +4,7 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload/config'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
+import { MyCustomComponent } from '@/MyCustomComponent'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -14,6 +15,11 @@ export default buildConfig({
   // but are of no use to us if we are only using Payload in a server context
   // for fetching data, etc.
   editor: lexicalEditor(),
+  admin: {
+    components: {
+      Nav: MyCustomComponent,
+    },
+  },
   collections: [
     {
       slug: 'users',
