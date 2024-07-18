@@ -17,70 +17,7 @@ export class RemoveUnusedPayloadClientDeps {
     this.targetFilename = options.targetFilename
   }
 
-  // isImportedFromEntry(compilation, mod, entry) {
-  //   const checkImports = (moduleToCheck, visited = new Set()) => {
-  //     if (visited.has(moduleToCheck)) {
-  //       return false
-  //     }
-
-  //     visited.add(moduleToCheck)
-
-  //     // Get the issuer module
-  //     const issuer = compilation.moduleGraph.getIssuer(moduleToCheck)
-
-  //     if (!issuer) {
-  //       return false
-  //     }
-
-  //     // Check if the issuer's resource path ends with the target filename
-  //     if (issuer.resource && issuer.resource.endsWith(this.targetFilename)) {
-  //       return true
-  //     }
-
-  //     // Recursively check the issuer of the current module
-  //     return checkImports(issuer, visited)
-  //   }
-
-  //   // Get the entry module and its dependencies
-  //   const entryModule = compilation.entries.get(entry)
-  //   if (!entryModule) {
-  //     throw new Error(`Entry ${entry} not found in the compilation.`)
-  //   }
-
-  //   // Collect all modules for the given entry point
-  //   const entryModules = new Set()
-
-  //   const collectModules = (moduleToCheck) => {
-  //     if (entryModules.has(moduleToCheck)) {
-  //       return
-  //     }
-
-  //     entryModules.add(moduleToCheck)
-
-  //     // Get the dependencies of the module
-  //     const dependencies = compilation.moduleGraph.getOutgoingConnections(moduleToCheck)
-  //     dependencies.forEach((connection) => {
-  //       const mod = compilation.moduleGraph.getModule(connection)
-
-  //       if (mod) {
-  //         collectModules(mod)
-  //       }
-  //     })
-  //   }
-
-  //   const modToCollect = compilation.moduleGraph.getModule(entryModule.dependencies[0])
-
-  //   collectModules(modToCollect)
-
-  //   // Check if the module is within the collected entry modules and perform the import check
-  //   if (!entryModules.has(mod)) {
-  //     return false
-  //   }
-
-  //   return checkImports(mod)
-  // }
-
-  isImportedFromFile(compilation, mod, entry) {
+  isImportedFromFile(compilation, mod) {
     const checkImports = (moduleToCheck, visited = new Set()) => {
       if (visited.has(moduleToCheck)) {
         return false
@@ -88,85 +25,22 @@ export class RemoveUnusedPayloadClientDeps {
 
       visited.add(moduleToCheck)
 
-      // Get the issuer module
       const issuer = compilation.moduleGraph.getIssuer(moduleToCheck)
 
       if (!issuer) {
+        console.log('no issuer', moduleToCheck)
         return false
       }
 
-      // Check if the issuer's resource path ends with the target filename
       if (issuer.resource && issuer.resource.endsWith(this.targetFilename)) {
         return true
       }
 
-      // Recursively check the issuer of the current module
       return checkImports(issuer, visited)
-    }
-
-    // Get the entry module and its dependencies
-    const entryModule = compilation.entries.get(entry)
-    if (!entryModule) {
-      throw new Error(`Entry ${entry} not found in the compilation.`)
-    }
-
-    // Collect all modules for the given entry point
-    const entryModules = new Set()
-    const collectModules = (moduleToCheck) => {
-      if (entryModules.has(moduleToCheck)) {
-        return
-      }
-
-      entryModules.add(moduleToCheck)
-
-      // Get the dependencies of the module
-      const dependencies = compilation.moduleGraph.getOutgoingConnections(moduleToCheck)
-      dependencies.forEach((connection) => {
-        const mod = compilation.moduleGraph.getModule(connection)
-
-        if (mod) {
-          collectModules(mod)
-        }
-      })
-    }
-
-    const modToCollect = compilation.moduleGraph.getModule(entryModule.dependencies[0])
-    collectModules(modToCollect)
-
-    // Check if the module is within the collected entry modules and perform the import check
-    if (!entryModules.has(mod)) {
-      return false
     }
 
     return checkImports(mod)
   }
-
-  // isImportedFromServerOnly(compilation, mod, entry) {
-  //   // Function to traverse the dependency graph
-  //   const checkImports = (moduleToCheck, visited = new Set()) => {
-  //     if (visited.has(moduleToCheck)) {
-  //       return false
-  //     }
-
-  //     visited.add(moduleToCheck)
-  //     // Get the issuer module
-  //     const issuer = compilation.moduleGraph.getIssuer(moduleToCheck)
-
-  //     if (!issuer) {
-  //       return false
-  //     }
-
-  //     // Check if the issuer's resource path ends with the target filename
-  //     if (issuer.resource.endsWith(this.targetFilename)) {
-  //       return true
-  //     }
-  //     // Recursively check the issuer of the current module
-  //     return checkImports(issuer, visited)
-  //   }
-
-  //   // Check if the current module or any of its issuers were imported by the target module
-  //   return checkImports(mod)
-  // }
 
   async parseClientEntries(clientEntries) {
     const filteredClientEntries = Object.entries(clientEntries).reduce((acc, [key, value]) => {

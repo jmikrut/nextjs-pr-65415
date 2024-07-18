@@ -8,7 +8,7 @@ import React from 'react'
 
 // We'd like to import the config from a "proxy" which would be marked as
 // server only, like this:
-import config from '../../../payload.server'
+import dynamic from 'next/dynamic'
 
 // See the next.config.mjs in this repo -
 // if we could mark certain dependencies as server-only,
@@ -26,7 +26,15 @@ import config from '../../../payload.server'
 
 // we need a way to opt OUT of any automatic client inclusions for specific
 // dependencies (https://github.com/vercel/next.js/pull/65415)
+
+const MyClientComponent = dynamic(() => import('../../../MyClientComponent'))
+
+const obj = {
+  client: MyClientComponent,
+}
+
 const BloatedClientExample: React.FC = async () => {
+  console.log(obj)
   // const payload = await getPayloadHMR({ config })
 
   // const { docs } = await payload.find({
@@ -40,7 +48,7 @@ const BloatedClientExample: React.FC = async () => {
   return (
     <React.Fragment>
       <h1>Hey!</h1>
-      <p>{config.hi}</p>
+      {/* <MyComp /> */}
     </React.Fragment>
   )
 }
