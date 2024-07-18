@@ -1,89 +1,227 @@
-import * as util from 'node:util'
 import { getProxiedPluginState } from 'next/dist/build/build-context.js'
 import { parse } from 'node:querystring'
-import * as fs from 'node:fs'
 
 const PLUGIN_NAME = 'RemoveUnusedPayloadClientDeps'
 
-const pluginState = getProxiedPluginState({
-})
+const pluginState = getProxiedPluginState({})
+
+const filterKeys = [
+  'app-pages-internals',
+  'app/(payload)/layout',
+  'app/(payload)/admin/[[...segments]]/not-found',
+  'app/(payload)/admin/[[...segments]]/page',
+]
+
 export class RemoveUnusedPayloadClientDeps {
   constructor(options) {
     this.targetFilename = options.targetFilename
   }
 
-  apply(compiler) {
-    compiler.hooks.finishMake.tap(
-      PLUGIN_NAME,
-      async (compilation) => {
-        console.log('pluginState?.injectedClientEntries', pluginState?.injectedClientEntries)
+  // isImportedFromEntry(compilation, mod, entry) {
+  //   const checkImports = (moduleToCheck, visited = new Set()) => {
+  //     if (visited.has(moduleToCheck)) {
+  //       return false
+  //     }
 
-        // write pluginState?.injectedClientEntries to file.txt
+  //     visited.add(moduleToCheck)
 
+  //     // Get the issuer module
+  //     const issuer = compilation.moduleGraph.getIssuer(moduleToCheck)
 
-        if(pluginState?.injectedClientEntries && Object.keys(pluginState?.injectedClientEntries)?.length) {
-          fs.writeFileSync('file.txt', JSON.stringify(pluginState?.injectedClientEntries))
+  //     if (!issuer) {
+  //       return false
+  //     }
 
-          for(const values of Object.values(pluginState.injectedClientEntries)) {
-            const stringifiedQueryString = values.split('next-flight-client-entry-loader?')[1]
-            const parsed = parse(stringifiedQueryString)
-            console.log('\n\nfirstValues', parsed.modules)
-          }
+  //     // Check if the issuer's resource path ends with the target filename
+  //     if (issuer.resource && issuer.resource.endsWith(this.targetFilename)) {
+  //       return true
+  //     }
 
-        }
+  //     // Recursively check the issuer of the current module
+  //     return checkImports(issuer, visited)
+  //   }
 
-        //console.log(pluginState?.serverModuleIds ? Object.keys(pluginState?.serverModuleIds)?.length : 0, pluginState?.injectedClientEntries && Object.keys(pluginState?.injectedClientEntries)?.length ? Object.values(pluginState.injectedClientEntries)[0]  : 0)
+  //   // Get the entry module and its dependencies
+  //   const entryModule = compilation.entries.get(entry)
+  //   if (!entryModule) {
+  //     throw new Error(`Entry ${entry} not found in the compilation.`)
+  //   }
+
+  //   // Collect all modules for the given entry point
+  //   const entryModules = new Set()
+
+  //   const collectModules = (moduleToCheck) => {
+  //     if (entryModules.has(moduleToCheck)) {
+  //       return
+  //     }
+
+  //     entryModules.add(moduleToCheck)
+
+  //     // Get the dependencies of the module
+  //     const dependencies = compilation.moduleGraph.getOutgoingConnections(moduleToCheck)
+  //     dependencies.forEach((connection) => {
+  //       const mod = compilation.moduleGraph.getModule(connection)
+
+  //       if (mod) {
+  //         collectModules(mod)
+  //       }
+  //     })
+  //   }
+
+  //   const modToCollect = compilation.moduleGraph.getModule(entryModule.dependencies[0])
+
+  //   collectModules(modToCollect)
+
+  //   // Check if the module is within the collected entry modules and perform the import check
+  //   if (!entryModules.has(mod)) {
+  //     return false
+  //   }
+
+  //   return checkImports(mod)
+  // }
+
+  isImportedFromFile(compilation, mod, entry) {
+    const checkImports = (moduleToCheck, visited = new Set()) => {
+      if (visited.has(moduleToCheck)) {
+        return false
+      }
+
+      visited.add(moduleToCheck)
+
+      // Get the issuer module
+      const issuer = compilation.moduleGraph.getIssuer(moduleToCheck)
+
+      if (!issuer) {
+        return false
+      }
+
+      // Check if the issuer's resource path ends with the target filename
+      if (issuer.resource && issuer.resource.endsWith(this.targetFilename)) {
+        return true
+      }
+
+      // Recursively check the issuer of the current module
+      return checkImports(issuer, visited)
+    }
+
+    // Get the entry module and its dependencies
+    const entryModule = compilation.entries.get(entry)
+    if (!entryModule) {
+      throw new Error(`Entry ${entry} not found in the compilation.`)
+    }
+
+    // Collect all modules for the given entry point
+    const entryModules = new Set()
+    const collectModules = (moduleToCheck) => {
+      if (entryModules.has(moduleToCheck)) {
         return
-      },
-      // this.createClientEntries(compiler, compilation),
-    )
+      }
 
-    // compiler.hooks.thisCompilation.tap('ModuleIssuerCheckPlugin', (compilation) => {
-    //   compilation.hooks.succeedModule.tap('ModuleIssuerCheckPlugin', (module) => {
-    //     if(!module.resource) {
-    //       return;
-    //     }
-    //     const debug = module.resource.includes('MyCustomComponent');
+      entryModules.add(moduleToCheck)
 
-    //     // Function to check imports recursively
-    //     const checkImports = (mod, visited = new Set()) => {
-    //       if(debug && visited.size === 0) {
-    //         console.log(`\n\n\ncheckImports ${module.resource}`, compilation.moduleGraph.moduleMap?.size)
-    //       }
-    //       if (visited.has(mod)) {
-    //         return false;
-    //       }
-    //       visited.add(mod);
-    //       const issuer = compilation.moduleGraph.getIssuer(mod);
-    //       if(debug) {
-    //         console.log(`\nissuer "` + issuer?.resource+'"'/*, issuer*/)
-    //         //console.log(util.inspect(issuer, { depth: null }));
+      // Get the dependencies of the module
+      const dependencies = compilation.moduleGraph.getOutgoingConnections(moduleToCheck)
+      dependencies.forEach((connection) => {
+        const mod = compilation.moduleGraph.getModule(connection)
 
-    //         if(!issuer?.resource || !issuer?.resource?.length) {
-    //           console.log('Empty issuer');
-    //           //console.log(util.inspect(issuer, { depth: null }));
+        if (mod) {
+          collectModules(mod)
+        }
+      })
+    }
 
-    //         }
-    //       }
-    //       if (!issuer) {
-    //         return false;
-    //       }
-    //       if (issuer.resource && issuer.resource.endsWith(this.targetFilename)) {
-    //         if(debug) {
-    //           console.log('true', issuer.resource, this.targetFilename);
+    const modToCollect = compilation.moduleGraph.getModule(entryModule.dependencies[0])
+    collectModules(modToCollect)
 
-    //         }
-    //         return true;
-    //       }
-    //       return checkImports(issuer, visited);
-    //     };
+    // Check if the module is within the collected entry modules and perform the import check
+    if (!entryModules.has(mod)) {
+      return false
+    }
 
-    //     // Check if the current module is imported by the target
-    //     if (checkImports(module)) {
-    //       console.log(`Module ${module.resource} is indirectly imported by ${this.targetFilename}`);
-    //       // Here you can modify the module, apply transformations, etc.
-    //     }
-    //   });
-    // });
+    return checkImports(mod)
+  }
+
+  // isImportedFromServerOnly(compilation, mod, entry) {
+  //   // Function to traverse the dependency graph
+  //   const checkImports = (moduleToCheck, visited = new Set()) => {
+  //     if (visited.has(moduleToCheck)) {
+  //       return false
+  //     }
+
+  //     visited.add(moduleToCheck)
+  //     // Get the issuer module
+  //     const issuer = compilation.moduleGraph.getIssuer(moduleToCheck)
+
+  //     if (!issuer) {
+  //       return false
+  //     }
+
+  //     // Check if the issuer's resource path ends with the target filename
+  //     if (issuer.resource.endsWith(this.targetFilename)) {
+  //       return true
+  //     }
+  //     // Recursively check the issuer of the current module
+  //     return checkImports(issuer, visited)
+  //   }
+
+  //   // Check if the current module or any of its issuers were imported by the target module
+  //   return checkImports(mod)
+  // }
+
+  async parseClientEntries(clientEntries) {
+    const filteredClientEntries = Object.entries(clientEntries).reduce((acc, [key, value]) => {
+      if (!filterKeys.includes(key)) {
+        acc[key] = value
+      }
+      return acc
+    }, {})
+
+    for (const [key, value] of Object.entries(filteredClientEntries)) {
+      const queryString = value.split('next-flight-client-entry-loader?')[1]
+      const parsed = parse(queryString)
+
+      if (!parsed.modules) {
+        continue
+      }
+
+      let modules
+
+      if (Array.isArray(parsed.modules)) {
+        modules = parsed.modules.map((x) => JSON.parse(x))
+      } else {
+        modules = [JSON.parse(parsed.modules)]
+      }
+
+      if (modules) {
+        filteredClientEntries[key] = modules
+      }
+    }
+
+    return filteredClientEntries
+  }
+
+  apply(compiler) {
+    compiler.hooks.finishMake.tap(PLUGIN_NAME, async (compilation) => {
+      const parsed = await this.parseClientEntries(pluginState?.injectedClientEntries)
+      const modules = Array.from(compilation.modules)
+
+      Object.entries(parsed).forEach(([entry, clientEntries]) => {
+        if (Array.isArray(clientEntries)) {
+          clientEntries.forEach(({ request }) => {
+            const targetModule = Array.from(modules).find((mod) => mod.resource === request)
+
+            if (targetModule) {
+              const isImported = this.isImportedFromFile(compilation, targetModule, entry)
+
+              if (isImported) {
+                console.log(request)
+              }
+            }
+          })
+        }
+      })
+
+      return
+    })
   }
 }

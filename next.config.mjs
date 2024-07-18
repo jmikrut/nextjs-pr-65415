@@ -16,10 +16,9 @@ const nextConfig = {
   //   serverOnlyDependencies: [path.resolve(dirname, './server-config.ts')],
   // },
   webpack: (webpackConfig, { nextRuntime, isServer }) => {
-      webpackConfig.plugins.push(
-        new RemoveUnusedPayloadClientDeps({ targetFilename: 'payload.server.ts' }),
-      )
-
+    webpackConfig.plugins.push(
+      new RemoveUnusedPayloadClientDeps({ targetFilename: 'payload.server.ts' }),
+    )
 
     return webpackConfig
   },

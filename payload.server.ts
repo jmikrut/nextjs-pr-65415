@@ -1,3 +1,3 @@
-import config from './payload.config'
+import { config } from './dummyConfig'
 
 export default config
