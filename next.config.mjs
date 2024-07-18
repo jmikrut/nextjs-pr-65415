@@ -1,4 +1,5 @@
 import { withPayload } from '@payloadcms/next/withPayload'
+import { RemoveUnusedPayloadClientDeps } from './plugin.mjs'
 // import path from 'path'
 // import { fileURLToPath } from 'url'
 
@@ -14,6 +15,15 @@ const nextConfig = {
   // experimental: {
   //   serverOnlyDependencies: [path.resolve(dirname, './server-config.ts')],
   // },
+  webpack: (webpackConfig, { nextRuntime, isServer }) => {
+    if (isServer && nextRuntime === 'nodejs') {
+      webpackConfig.plugins.unshift(
+        new RemoveUnusedPayloadClientDeps({ targetFilename: 'payload.server.ts' }),
+      )
+    }
+
+    return webpackConfig
+  },
 }
 
 export default withPayload(nextConfig)
