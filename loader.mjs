@@ -75,7 +75,8 @@ export default async function loader(source) {
       }))
     if(source.includes('MyCustomComponent')) {
       console.log({ source, code: code.code })
-     source = 'export var MyCustomComponent = () => "worked"'
+     //source = 'export var MyCustomComponent2 = () => "worked"'
+      source = code.code.replace("'use client'", '')
     }else {
       //source = code.code
       source = code.code.replace("'use client'", '')

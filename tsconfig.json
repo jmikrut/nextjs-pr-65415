@@ -28,6 +28,9 @@
       ],
       "@payload-config": [
         "./payload.config.ts"
+      ],
+      "@payload-config-s": [
+        "./payload.server.ts"
       ]
     },
     "target": "ES2017"

@@ -1,6 +1,7 @@
 import { withPayload } from '@payloadcms/next/withPayload'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { ModuleIssuerCheckPlugin } from './newplugin.mjs'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -15,9 +16,31 @@ const nextConfig = {
   //   serverOnlyDependencies: [path.resolve(dirname, './server-config.ts')],
   // },
   webpack: (config, { isServer }) => {
+    config.cache = false
+    config.optimization.concatenateModules = false
+    config.optimization.providedExports = false
+    config.optimization.usedExports = false
+    config.optimization.sideEffects = false
+
+/*
+    config.module.rules.push({
+      test: /\.(ts|js)x?$/,
+      enforce: 'pre',
+      use: [
+        {
+          loader: path.resolve(dirname, './newloader.mjs'),
+        },
+      ],
+    })
+*/
+
+    config.plugins.push(new ModuleIssuerCheckPlugin({
+      targetFilename: 'payload.server.ts'
+    }))
+
     if (true) {
       console.log('Building')
-      config.module.rules.push({
+      /*config.module.rules.push({
         test: /\.(ts|js)x?$/,
         enforce: 'pre',
         use: [
@@ -36,8 +59,8 @@ const nextConfig = {
           },
         ],
       })
+    }*/
     }
-
     //console.log('config.module.rules', config.module.rules)
 
     return config
