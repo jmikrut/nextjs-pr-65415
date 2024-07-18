@@ -16,11 +16,10 @@ const nextConfig = {
   //   serverOnlyDependencies: [path.resolve(dirname, './server-config.ts')],
   // },
   webpack: (webpackConfig, { nextRuntime, isServer }) => {
-    if (isServer && nextRuntime === 'nodejs') {
-      webpackConfig.plugins.unshift(
+      webpackConfig.plugins.push(
         new RemoveUnusedPayloadClientDeps({ targetFilename: 'payload.server.ts' }),
       )
-    }
+
 
     return webpackConfig
   },

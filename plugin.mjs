@@ -1,22 +1,38 @@
 import * as util from 'node:util'
 import { getProxiedPluginState } from 'next/dist/build/build-context.js'
+import { parse } from 'node:querystring'
+import * as fs from 'node:fs'
 
 const PLUGIN_NAME = 'RemoveUnusedPayloadClientDeps'
 
 const pluginState = getProxiedPluginState({
-  injectedClientEntries: {},
 })
-
 export class RemoveUnusedPayloadClientDeps {
   constructor(options) {
     this.targetFilename = options.targetFilename
   }
 
   apply(compiler) {
-    compiler.hooks.finishMake.tapPromise(
+    compiler.hooks.finishMake.tap(
       PLUGIN_NAME,
       async (compilation) => {
-        console.log(pluginState)
+        console.log('pluginState?.injectedClientEntries', pluginState?.injectedClientEntries)
+
+        // write pluginState?.injectedClientEntries to file.txt
+
+
+        if(pluginState?.injectedClientEntries && Object.keys(pluginState?.injectedClientEntries)?.length) {
+          fs.writeFileSync('file.txt', JSON.stringify(pluginState?.injectedClientEntries))
+
+          for(const values of Object.values(pluginState.injectedClientEntries)) {
+            const stringifiedQueryString = values.split('next-flight-client-entry-loader?')[1]
+            const parsed = parse(stringifiedQueryString)
+            console.log('\n\nfirstValues', parsed.modules)
+          }
+
+        }
+
+        //console.log(pluginState?.serverModuleIds ? Object.keys(pluginState?.serverModuleIds)?.length : 0, pluginState?.injectedClientEntries && Object.keys(pluginState?.injectedClientEntries)?.length ? Object.values(pluginState.injectedClientEntries)[0]  : 0)
         return
       },
       // this.createClientEntries(compiler, compilation),
